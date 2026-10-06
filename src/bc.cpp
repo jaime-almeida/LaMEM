@@ -247,12 +247,12 @@ PetscErrorCode BCBlockGetPolygon(BCBlock *bcb, PetscScalar Xb[], PetscScalar *cp
 
 // read optional <comp>_num_periods / <comp>_time_delims / <comp>_values
 PetscErrorCode VelBoxReadPeriods(
-	FB          *fb,
-	Scaling     *scal,
-	const char  *comp,
-	PetscInt    *numPeriods,
-	PetscScalar *timeDelims,
-	PetscScalar *values)
+    FB          *fb,
+    Scaling     *scal,
+    const char  *comp,
+    PetscInt    *numPeriods,
+    PetscScalar *timeDelims,
+    PetscScalar *values)
 {
 	char     key[64];
 	PetscInt jj;
@@ -301,13 +301,13 @@ PetscErrorCode VelBoxReadPeriods(
 // get active velocity and accumulated displacement (integral of v over [0,time])
 // for one velocity component
 PetscErrorCode VelBoxGetComp(
-	PetscScalar        vconst,
-	PetscInt           numPeriods,
-	const PetscScalar *timeDelims,
-	const PetscScalar *values,
-	PetscScalar        time,
-	PetscScalar       *v,
-	PetscScalar       *disp)
+    PetscScalar        vconst,
+    PetscInt           numPeriods,
+    const PetscScalar *timeDelims,
+    const PetscScalar *values,
+    PetscScalar        time,
+    PetscScalar       *v,
+    PetscScalar       *disp)
 {
 	PetscInt    jj;
 	PetscScalar t0, t1;
