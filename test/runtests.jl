@@ -1650,6 +1650,17 @@ if should_run_test("t40_TimeDependentVBox")
     @test perform_lamem_test(dir,"velbox_time_test_notime.dat","velbox_time_test_notime",
                             keywords=keywords, accuracy=acc, cores=4, mpiexec=mpiexec,
                             create_expected_file=update_expected, clean_dir=clean_files)
+
+    # Time-dependent vx and independent vy,  box fixed in space (advect = 0)
+    @test perform_lamem_test(dir,"velbox_test_double_setting_advect0.dat","velbox_test_double_setting_advect0",
+                            keywords=keywords, accuracy=acc, cores=4, mpiexec=mpiexec,
+                            create_expected_file=update_expected, clean_dir=clean_files)
+
+    # Time-dependent vx and independent vy, box advected with its velocity (advect = 1)
+    @test perform_lamem_test(dir,"velbox_test_double_setting_advect1.dat","velbox_test_double_setting_advect1",
+                            keywords=keywords, accuracy=acc, cores=4, mpiexec=mpiexec,
+                            create_expected_file=update_expected, clean_dir=clean_files)
+
 end
 end
 #---------------------------------------------------------------------------

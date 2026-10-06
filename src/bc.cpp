@@ -245,34 +245,38 @@ PetscErrorCode BCBlockGetPolygon(BCBlock *bcb, PetscScalar Xb[], PetscScalar *cp
 // Velocity box functions
 //---------------------------------------------------------------------------
 
-// time-dependent velocity box helpers
 // read optional <comp>_num_periods / <comp>_time_delims / <comp>_values
-static PetscErrorCode VelBoxReadPeriods(FB *fb, Scaling *scal, const char *comp, VelPeriods *vp)
+PetscErrorCode VelBoxReadPeriods(FB *fb, Scaling *scal, const char *comp, VelPeriods *vp)
 {
 	char     key[64];
 	PetscInt jj;
 
 	PetscFunctionBeginUser;
 
+	if(!fb || !scal || !comp || !vp)
+	{
+		SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_USER, "Null argument in VelBoxReadPeriods");
+	}
+
 	vp->n = 0;
 
-	snprintf(key, sizeof(key), "%s_num_periods", comp);
+	PetscCall(PetscSNPrintf(key, sizeof(key), "%s_num_periods", comp));
 	PetscCall(getIntParam(fb, _OPTIONAL_, key, &vp->n, 1, _max_periods_));
 
-	if(vp->n < 0)
+	if(vp->n < 0 || vp->n > _max_periods_)
 	{
-		SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_USER, "Negative number of periods for velocity box component %s", comp);
+		SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_USER, "Invalid number of periods (%" PetscInt_FMT ") for velocity box component %s", vp->n, comp);
 	}
 
 	if(vp->n)
 	{
 		if(vp->n > 1)
 		{
-			snprintf(key, sizeof(key), "%s_time_delims", comp);
+			PetscCall(PetscSNPrintf(key, sizeof(key), "%s_time_delims", comp));
 			PetscCall(getScalarParam(fb, _REQUIRED_, key, vp->delims, vp->n-1, scal->time));
 		}
 
-		snprintf(key, sizeof(key), "%s_values", comp);
+		PetscCall(PetscSNPrintf(key, sizeof(key), "%s_values", comp));
 		PetscCall(getScalarParam(fb, _REQUIRED_, key, vp->vals, vp->n, scal->velocity));
 
 		// delimiters must be in ascending order
@@ -290,7 +294,7 @@ static PetscErrorCode VelBoxReadPeriods(FB *fb, Scaling *scal, const char *comp,
 
 // get active velocity and accumulated displacement (integral of v over [0,time])
 // for one velocity component
-static void VelBoxGetComp(
+PetscErrorCode VelBoxGetComp(
 	PetscScalar       vconst,
 	const VelPeriods *vp,
 	PetscScalar       time,
@@ -300,12 +304,27 @@ static void VelBoxGetComp(
 	PetscInt    jj;
 	PetscScalar t0, t1;
 
+	PetscFunctionBeginUser;
+
+	if(!vp || !v || !disp)
+	{
+		SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_USER, "Null argument in VelBoxGetComp");
+	}
+
+	if(vp->n < 0 || vp->n > _max_periods_)
+	{
+		SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_USER, "Invalid number of velocity box periods: %" PetscInt_FMT, vp->n);
+	}
+
+	// no periods: constant velocity (or not specified)
 	if(!vp->n)
 	{
-		// constant velocity (or not specified): original behavior
-		*v    = vconst;
-		*disp = (vconst != DBL_MAX) ? vconst*time : 0.0;
-		return;
+		*v = vconst;
+
+		if(vconst == DBL_MAX) *disp = 0.0;
+		else                  *disp = vconst*time;
+
+		PetscFunctionReturn(0);
 	}
 
 	// active period (same rule as BCGetBGStrainRates)
@@ -322,7 +341,10 @@ static void VelBoxGetComp(
 
 	for(jj = 0; jj < vp->n; jj++)
 	{
-		t1 = (jj < vp->n-1 && vp->delims[jj] < time) ? vp->delims[jj] : time;
+		// end of this period, clipped to the current time
+		t1 = time;
+
+		if(jj < vp->n-1 && vp->delims[jj] < time) t1 = vp->delims[jj];
 
 		if(t1 > t0)
 		{
@@ -332,9 +354,9 @@ static void VelBoxGetComp(
 
 		if(t0 >= time) break;
 	}
+
+	PetscFunctionReturn(0);
 }
-
-
 PetscErrorCode VelBoxCreate(VelBox *velbox, Scaling *scal, FB *fb)
 {
 	PetscFunctionBeginUser;
@@ -2174,7 +2196,6 @@ PetscErrorCode BCApplyBoundVel(BCCtx *bc)
 	PetscFunctionReturn(0);
 }
 //---------------------------------------------------------------------------
-
 PetscErrorCode BCApplyVelBox(BCCtx *bc)
 {
 	FDSTAG      *fs;
@@ -2213,9 +2234,9 @@ PetscErrorCode BCApplyVelBox(BCCtx *bc)
 		cz = velbox->cenZ; dz = velbox->widthZ;
 
 		// active velocities and accumulated displacements at current time
-		VelBoxGetComp(velbox->vx, &velbox->pvx, t, &vx, &ux);
-		VelBoxGetComp(velbox->vy, &velbox->pvy, t, &vy, &uy);
-		VelBoxGetComp(velbox->vz, &velbox->pvz, t, &vz, &uz);
+		PetscCall(VelBoxGetComp(velbox->vx, &velbox->pvx, t, &vx, &ux));
+		PetscCall(VelBoxGetComp(velbox->vy, &velbox->pvy, t, &vy, &uy));
+		PetscCall(VelBoxGetComp(velbox->vz, &velbox->pvz, t, &vz, &uz));
 
 		// advect box (if requested)
 		if(velbox->advect)

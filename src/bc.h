@@ -65,7 +65,6 @@ PetscErrorCode BCBlockGetPolygon(BCBlock *bcb, PetscScalar Xb[], PetscScalar *cp
 //---------------------------------------------------------------------------
 // Internal velocity boxes (rectangular boxes with constant prescribed velocity that are either fixed or move)
 //---------------------------------------------------------------------------
-
 // piecewise-constant velocity time series (one velocity component)
 struct VelPeriods
 {
@@ -90,6 +89,15 @@ struct VelBox
 	VelPeriods  pvy;     // time-dependent Vy (optional)
 	VelPeriods  pvz;     // time-dependent Vz (optional)
 };
+
+PetscErrorCode VelBoxReadPeriods(FB *fb, Scaling *scal, const char *comp, VelPeriods *vp);
+
+PetscErrorCode VelBoxGetComp(
+	PetscScalar       vconst,
+	const VelPeriods *vp,
+	PetscScalar       time,
+	PetscScalar      *v,
+	PetscScalar      *disp);
 
 //---------------------------------------------------------------------------
 // Internal velocity cylinders (cylinders with constant prescribed velocity that are either fixed or move)
