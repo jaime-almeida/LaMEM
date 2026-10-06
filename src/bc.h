@@ -85,9 +85,17 @@ struct VelBox
 	PetscScalar vx;      // Vx-velocity within box
 	PetscScalar vy;      // Vy-velocity within box
 	PetscScalar vz;      // Vz-velocity within box
-	VelPeriods  pvx;     // time-dependent Vx (optional)
-	VelPeriods  pvy;     // time-dependent Vy (optional)
-	VelPeriods  pvz;     // time-dependent Vz (optional)
+
+	// optional piecewise-constant (time-dependent) velocities
+	PetscInt    vxNumPeriods;                 // number of Vx periods (0 = not used)
+	PetscScalar vxTimeDelims[_max_periods_];  // Vx period end times (vxNumPeriods-1 used)
+	PetscScalar vxValues    [_max_periods_];  // Vx in each period
+	PetscInt    vyNumPeriods;                 // number of Vy periods (0 = not used)
+	PetscScalar vyTimeDelims[_max_periods_];  // Vy period end times (vyNumPeriods-1 used)
+	PetscScalar vyValues    [_max_periods_];  // Vy in each period
+	PetscInt    vzNumPeriods;                 // number of Vz periods (0 = not used)
+	PetscScalar vzTimeDelims[_max_periods_];  // Vz period end times (vzNumPeriods-1 used)
+	PetscScalar vzValues    [_max_periods_];  // Vz in each period
 };
 
 PetscErrorCode VelBoxReadPeriods(FB *fb, Scaling *scal, const char *comp, VelPeriods *vp);
