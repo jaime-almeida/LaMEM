@@ -93,11 +93,11 @@ struct VelBox
 PetscErrorCode VelBoxReadPeriods(FB *fb, Scaling *scal, const char *comp, VelPeriods *vp);
 
 PetscErrorCode VelBoxGetComp(
-	PetscScalar       vconst,
-	const VelPeriods *vp,
-	PetscScalar       time,
-	PetscScalar      *v,
-	PetscScalar      *disp);
+    PetscScalar       vconst,
+    const VelPeriods *vp,
+    PetscScalar       time,
+    PetscScalar      *v,
+    PetscScalar      *disp);
 
 //---------------------------------------------------------------------------
 // Internal velocity cylinders (cylinders with constant prescribed velocity that are either fixed or move)

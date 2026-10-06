@@ -295,11 +295,11 @@ PetscErrorCode VelBoxReadPeriods(FB *fb, Scaling *scal, const char *comp, VelPer
 // get active velocity and accumulated displacement (integral of v over [0,time])
 // for one velocity component
 PetscErrorCode VelBoxGetComp(
-	PetscScalar       vconst,
-	const VelPeriods *vp,
-	PetscScalar       time,
-	PetscScalar      *v,
-	PetscScalar      *disp)
+    PetscScalar       vconst,
+    const VelPeriods *vp,
+    PetscScalar       time,
+    PetscScalar      *v,
+    PetscScalar      *disp)
 {
 	PetscInt    jj;
 	PetscScalar t0, t1;
